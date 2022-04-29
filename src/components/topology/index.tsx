@@ -52,6 +52,7 @@ interface TopologyComponentState {
 }
 
 function generateCoordinateSystem(minX: number, maxX: number, minY: number, maxY: number) {
+    console.log(minX, maxX, minY, maxY);
     // @ts-ignore
     let data: TopologyItem[] = [];
     // @ts-ignore
@@ -65,7 +66,7 @@ function generateCoordinateSystem(minX: number, maxX: number, minY: number, maxY
             x: i,
         })
         data.push({
-            name: ``,
+            name: `${i}`,
             id: `cs_x_max_${i}`,
             // symbol: "none",
             symbolSize: 0,
@@ -83,7 +84,7 @@ function generateCoordinateSystem(minX: number, maxX: number, minY: number, maxY
     }
     for (let i = minY; i < maxY; i++) {
         data.push({
-            name: `${i}`,
+            name: `${maxY - i + minY}`,
             id: `cs_y_min_${i}`,
             symbolSize: 0,
             y: i,
@@ -109,6 +110,10 @@ function generateCoordinateSystem(minX: number, maxX: number, minY: number, maxY
     return {
         data: data,
         links: links,
+        minX: minX,
+        maxX: maxX,
+        minY: minY,
+        maxY: maxY
     }
 }
 
@@ -127,14 +132,6 @@ class TopologyComponent extends React.PureComponent<TopologyComponentProps, Topo
 
     doGenerateCoordinateSystem() {
         let {datas} = this.props;
-        let res: {
-            data: TopologyItem[],
-            links: TopologyLink[],
-        } = {
-            data: [],
-            links: []
-        }
-        // return res
         if (datas.length === 0) {
             return generateCoordinateSystem(0, 15, 0, 15);
         }
@@ -168,7 +165,13 @@ class TopologyComponent extends React.PureComponent<TopologyComponentProps, Topo
     render() {
         let {datas, links} = this.props;
 
-        let res = this.doGenerateCoordinateSystem();
+        let res: any = this.doGenerateCoordinateSystem();
+        let nodes = datas.map((item: any) => {
+            return {
+                ...item,
+                y: res.maxY - item.y + res.minY
+            }
+        });
 
         const option = {
             tooltip: {},
@@ -198,7 +201,7 @@ class TopologyComponent extends React.PureComponent<TopologyComponentProps, Topo
                             }
                         }
                     },
-                    data: res.data.concat(datas),
+                    data: res.data.concat(nodes),
                     // links: [],
                     links: res.links.concat(links),
                     lineStyle: {

@@ -146,7 +146,7 @@ class App extends React.PureComponent<AppProps, AppState> {
                 newResult += `\n${datas[i].name}\tNA\t${datas[i].y}\t${datas[i].x}`
             }
             newResult += `\n\nlink
-            
+
 # srcNode   dstNode     bandwidth   metric  delay   queue`
             for (let i = 0; i < links.length; i++) {
                 newResult += `\n${links[i].source}\t${links[i].target}\t${links[i].bandwidth}Mbps\t${links[i].metric}\t${links[i].delay}ms\t${links[i].queue}`
@@ -159,7 +159,6 @@ class App extends React.PureComponent<AppProps, AppState> {
     }
 
     importTopology(e: any) {
-        console.log(e)
         let mode: "node" | "link" | "none" = "none"
         let lines = this.state.result.split("\n")
         let datas: TopologyItem[] = []
