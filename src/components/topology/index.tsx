@@ -52,7 +52,6 @@ interface TopologyComponentState {
 }
 
 function generateCoordinateSystem(minX: number, maxX: number, minY: number, maxY: number) {
-    console.log(minX, maxX, minY, maxY);
     // @ts-ignore
     let data: TopologyItem[] = [];
     // @ts-ignore
@@ -145,13 +144,14 @@ class TopologyComponent extends React.PureComponent<TopologyComponentProps, Topo
             minY = Math.min(minY, datas[i].y)
             maxY = Math.max(maxY, datas[i].y)
         }
-        if (maxY - minY < 13) {
-            maxY = minY + 13
+        if (maxY - minY < 5) {
+            maxY = minY + 5
         }
-        if (maxX - minX < 13) {
-            maxX = minX + 13
+        if (maxX - minX < 5) {
+            maxX = minX + 5
         }
-        return generateCoordinateSystem(minX - 1, maxX + 1, minY - 1, maxY + 1)
+
+        return generateCoordinateSystem(minX - 2, maxX + 2, minY - 2, maxY + 2)
     }
 
     onChartClick(params: any) {
