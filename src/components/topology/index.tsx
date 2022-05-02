@@ -156,7 +156,10 @@ class TopologyComponent extends React.PureComponent<TopologyComponentProps, Topo
 
     onChartClick(params: any) {
         if (params.dataType === "node") {
-            this.props.onDataClick?.(params.data)
+            this.props.onDataClick?.({
+                ...params.data,
+                y: params.data.relY
+            })
         } else if (params.dataType === "edge") {
             this.props.onLinkClick?.(params.data)
         }
@@ -169,7 +172,8 @@ class TopologyComponent extends React.PureComponent<TopologyComponentProps, Topo
         let nodes = datas.map((item: any) => {
             return {
                 ...item,
-                y: res.maxY - item.y + res.minY
+                y: res.maxY - item.y + res.minY,
+                relY: item.y
             }
         });
 

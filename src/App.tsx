@@ -221,8 +221,6 @@ class App extends React.PureComponent<AppProps, AppState> {
                 }
             }
         }
-        console.log(datas)
-        console.log(links)
         this.setState({
             datas: datas,
             links: links
