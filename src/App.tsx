@@ -4,6 +4,7 @@ import TopologyComponent, {TopologyItem, TopologyLink} from "./components/topolo
 import "antd/dist/antd.css";
 import {Button, Form, Input} from "antd";
 import {FormInstance} from "antd/es/form";
+import {stat} from "fs";
 
 interface AppProps {
 
@@ -13,6 +14,8 @@ interface AppState {
     datas: TopologyItem[],
     links: TopologyLink[],
     result: string,
+    linkInfoHide: boolean,
+    hideGrid: boolean,
 }
 
 class App extends React.PureComponent<AppProps, AppState> {
@@ -24,13 +27,17 @@ class App extends React.PureComponent<AppProps, AppState> {
         this.deleteLink = this.deleteLink.bind(this)
         this.exportTopology = this.exportTopology.bind(this)
         this.importTopology = this.importTopology.bind(this)
+        this.hideLinkInfo = this.hideLinkInfo.bind(this)
+        this.hideGrid = this.hideGrid.bind(this)
         this.onResultChange = this.onResultChange.bind(this)
         this.onDataClick = this.onDataClick.bind(this)
         this.onLinkClick = this.onLinkClick.bind(this)
         this.state = {
             datas: [],
             links: [],
-            result: ""
+            result: "",
+            linkInfoHide: false,
+            hideGrid: false
         }
     }
 
@@ -86,7 +93,7 @@ class App extends React.PureComponent<AppProps, AppState> {
                 item.name = `${item.bandwidth}Mbps / ${item.delay}ms`
                 item.value = item.name
                 item.label = {
-                    show: true,
+                    show: !this.state.linkInfoHide,
                     formatter: '{@score}',
                     fontSize: 12
                 }
@@ -212,7 +219,7 @@ class App extends React.PureComponent<AppProps, AppState> {
                     item.name = `${item.bandwidth}Mbps / ${item.delay}ms`
                     item.value = item.name
                     item.label = {
-                        show: true,
+                        show: !this.state.linkInfoHide,
                         formatter: '{@score}',
                         fontSize: 12
                     }
@@ -224,6 +231,34 @@ class App extends React.PureComponent<AppProps, AppState> {
         this.setState({
             datas: datas,
             links: links
+        })
+    }
+
+    hideLinkInfo(e: any) {
+        this.setState(state => {
+            return {
+                ...state,
+                links: state.links.map(item => {
+                    return {
+                        ...item,
+                        label: {
+                            show: state.linkInfoHide,
+                            formatter: '{@score}',
+                            fontSize: 12
+                        }
+                    }
+                }),
+                linkInfoHide: !state.linkInfoHide
+            }
+        })
+    }
+
+    hideGrid(e: any) {
+        this.setState(state => {
+            return {
+                ...state,
+                hideGrid: !state.hideGrid
+            }
         })
     }
 
@@ -249,7 +284,9 @@ class App extends React.PureComponent<AppProps, AppState> {
         const {
             datas,
             links,
-            result
+            result,
+            linkInfoHide,
+            hideGrid
         } = this.state;
         return (
 
@@ -344,9 +381,16 @@ class App extends React.PureComponent<AppProps, AppState> {
                         <Button type={"default"} htmlType="button" onClick={this.importTopology}>
                             Import
                         </Button>
+                        <Button type={"default"} htmlType="button" onClick={this.hideLinkInfo}>
+                            {linkInfoHide ? "Show link info" : "Hide link info"}
+                        </Button>
+                        <Button type={"default"} htmlType="button" onClick={this.hideGrid}>
+                            {hideGrid ? "Show grid" : "Hide grid"}
+                        </Button>
                     </div>
                 </div>
                 <TopologyComponent datas={datas} links={links} onDataClick={this.onDataClick}
+                                   hideGrid={hideGrid}
                                    onLinkClick={this.onLinkClick}/>
             </div>
         );

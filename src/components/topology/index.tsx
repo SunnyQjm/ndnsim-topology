@@ -11,12 +11,12 @@ import {
 } from "echarts/components";
 // Import renderer, note that introducing the CanvasRenderer or SVGRenderer is a required step
 import {
-    CanvasRenderer,
+    CanvasRenderer, SVGRenderer,
 } from 'echarts/renderers';
 
 // Register the required components
 echarts.use(
-    [GraphChart, TooltipComponent, CanvasRenderer]
+    [GraphChart, TooltipComponent, CanvasRenderer, SVGRenderer]
 );
 
 export interface TopologyItem {
@@ -43,6 +43,7 @@ export interface TopologyLink {
 interface TopologyComponentProps {
     datas: TopologyItem[]
     links: TopologyLink[]
+    hideGrid?: boolean  // 是否隐藏网格
     onDataClick?: (data: TopologyItem) => void
     onLinkClick?: (link: TopologyLink) => void
 }
@@ -51,7 +52,7 @@ interface TopologyComponentState {
 
 }
 
-function generateCoordinateSystem(minX: number, maxX: number, minY: number, maxY: number) {
+function generateCoordinateSystem(minX: number, maxX: number, minY: number, maxY: number, hideGrid: boolean) {
     // @ts-ignore
     let data: TopologyItem[] = [];
     // @ts-ignore
@@ -106,6 +107,16 @@ function generateCoordinateSystem(minX: number, maxX: number, minY: number, maxY
             }
         })
     }
+    if (hideGrid) {
+        return {
+            data: [],
+            links: [],
+            minX: minX,
+            maxX: maxX,
+            minY: minY,
+            maxY: maxY
+        }
+    }
     return {
         data: data,
         links: links,
@@ -121,7 +132,9 @@ function generateCoordinateSystem(minX: number, maxX: number, minY: number, maxY
 
 class TopologyComponent extends React.PureComponent<TopologyComponentProps, TopologyComponentState> {
 
-    static defaultProps = {}
+    static defaultProps = {
+        hideGrid: false
+    }
 
     constructor(props: TopologyComponentProps) {
         super(props);
@@ -129,10 +142,13 @@ class TopologyComponent extends React.PureComponent<TopologyComponentProps, Topo
         this.onChartClick = this.onChartClick.bind(this)
     }
 
-    doGenerateCoordinateSystem() {
+    echartRef: any = null;
+
+
+    doGenerateCoordinateSystem(hideGrid: boolean) {
         let {datas} = this.props;
         if (datas.length === 0) {
-            return generateCoordinateSystem(0, 15, 0, 15);
+            return generateCoordinateSystem(0, 15, 0, 15, hideGrid);
         }
         let minX = datas[0].x;
         let maxX = datas[0].x;
@@ -151,7 +167,7 @@ class TopologyComponent extends React.PureComponent<TopologyComponentProps, Topo
             maxX = minX + 5
         }
 
-        return generateCoordinateSystem(minX - 2, maxX + 2, minY - 2, maxY + 2)
+        return generateCoordinateSystem(minX - 2, maxX + 2, minY - 2, maxY + 2, hideGrid)
     }
 
     onChartClick(params: any) {
@@ -163,12 +179,19 @@ class TopologyComponent extends React.PureComponent<TopologyComponentProps, Topo
         } else if (params.dataType === "edge") {
             this.props.onLinkClick?.(params.data)
         }
+        if (this.echartRef != null) {
+            const echartInstance = this.echartRef.getEchartsInstance();
+// then you can use any API of echarts.
+            const base64 = echartInstance.getSvgDataURL();
+            console.log(base64)
+        }
     }
 
     render() {
-        let {datas, links} = this.props;
+        let {datas, links, hideGrid} = this.props;
 
-        let res: any = this.doGenerateCoordinateSystem();
+        let res = this.doGenerateCoordinateSystem(hideGrid === true);
+
         let nodes = datas.map((item: any) => {
             return {
                 ...item,
@@ -176,6 +199,7 @@ class TopologyComponent extends React.PureComponent<TopologyComponentProps, Topo
                 relY: item.y
             }
         });
+
 
         const option = {
             tooltip: {},
@@ -222,6 +246,10 @@ class TopologyComponent extends React.PureComponent<TopologyComponentProps, Topo
             <ReactEChartsCore
                 onEvents={{
                     "click": this.onChartClick
+                }}
+                opts={{renderer: 'svg'}}
+                ref={(e) => {
+                    this.echartRef = e;
                 }}
                 echarts={echarts}
                 option={option} style={{height: window.innerHeight, width: '100%'}}/>
